@@ -6,6 +6,7 @@ import {useNavigate} from 'react-router-dom'
 
 import { toast } from 'react-toastify';
 import axios from 'axios'
+import { BASE_URl } from "../libs/config";
 
 const Login = () => {
   const navigate = useNavigate()
@@ -25,7 +26,7 @@ const Login = () => {
 
   const onLoginClick = async () => {
     const params = {username: username, password: password}
-    await axios.post('http://localhost:3000/login', params).then((response: any)=> {
+    await axios.post(BASE_URl+'login', params).then((response: any)=> {
       
         if(response.data.status === 'success'){
             navigate('/adminPage')
