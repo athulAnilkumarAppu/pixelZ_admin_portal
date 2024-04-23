@@ -1,0 +1,1 @@
+export const BASE_URl = 'https://pixelz-wallpapers-server.onrender.com/'
