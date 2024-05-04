@@ -72,7 +72,7 @@ const AdminPortalIndex = ()=> {
    
 
     const onUploadClick = async ()=> {
-        const params = {imageBase64: imageAddType === 'upload' ? imageBase64 : imageAddType === 'imageUrl' ? imageUrl : '', imageCategory: selectedCategory, imageName: imageAddType === 'upload' ? file?.name: `image${Math.random()}`}
+        const params = {imageBase64: imageAddType === 'upload' ? imageBase64 : imageAddType === 'imageUrl' ? imageUrl : '', imageCategory: selectedCategory, imageName: imageAddType === 'upload' ? file?.name: `image${Math.random()}`, imageAddType: imageAddType}
         axios.post(BASE_URl+'addWallpapersApi', params).then((response: any)=> {
             if(response){
                 getAllResultService()
