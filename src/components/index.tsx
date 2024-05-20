@@ -21,6 +21,7 @@ const AdminPortalIndex = ()=> {
 
   const [imageBase64, setImageBase64] = useState<any>('')
   const [selectedCategory, setSelectedCategory] = useState<any>('')
+  const [imageThumbnail, setImageThumbnail] = useState<any>('')
 
   const [allWallpapersData, setAllWallpapersData] = useState<any>([])
   const [imageAddType, setImageAddType] = useState<any>('imageUrl')
@@ -53,26 +54,105 @@ const AdminPortalIndex = ()=> {
 
 
 
-    const onFileChange = (event: any) => {
-      const file: any = event.target.files[0];
-      setFile(file)
-      const reader: any = new FileReader();
+    // const onFileChange = (event: any) => {
+    //   const file: any = event.target.files[0];
+    //   setFile(file)
+    //   const reader: any = new FileReader();
   
-      reader.onload = () => {
-        const base64String = reader.result.split(',')[1];
-        setImageBase64(`data:image/jpeg;base64,${base64String}`);
-      };
+    //   reader.onload = () => {
+    //     const base64String = reader.result.split(',')[1];
+    //     setImageBase64(`data:image/jpeg;base64,${base64String}`);
+    //   };
   
-      reader.readAsDataURL(file);
-    };
+    //   reader.readAsDataURL(file);
+    // };
 
     const onCategoryChange = (e: any)=> {
       setSelectedCategory(e.target.value)
     }
+
+
+    const onFileChange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) {
+        console.error("No file selected");
+        return;
+      }
+    
+      setFile(file);
+    
+      if (!window.FileReader) {
+        console.error("FileReader API is not supported by your browser.");
+        return;
+      }
+    
+      const reader = new FileReader();
+    
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64String = result.split(',')[1];
+        setImageBase64(`data:image/jpeg;base64,${base64String}`);
+        createThumbnail(result);
+      };
+    
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+      };
+    
+      reader.readAsDataURL(file);
+    };
+    
+    const createThumbnail = (dataUrl: string) => {
+      const img = new Image();
+      img.src = dataUrl;
+    
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+    
+        if (ctx) {
+          // Set desired thumbnail size
+          const maxWidth = 100; // or any desired width
+          const maxHeight = 100; // or any desired height
+          let width = img.width;
+          let height = img.height;
+    
+          // Calculate the aspect ratio
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+    
+          // Set canvas dimensions
+          canvas.width = width;
+          canvas.height = height;
+    
+          // Draw the image onto the canvas
+          ctx.drawImage(img, 0, 0, width, height);
+    
+          // Convert the canvas content to a Data URL
+          const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.7); // Adjust quality as needed
+    
+          // Set the thumbnail Data URL to the state
+          setImageThumbnail(thumbnailDataUrl);
+        }
+      };
+    
+      img.onerror = (error) => {
+        console.error("Error loading image:", error);
+      };
+    };
    
 
     const onUploadClick = async ()=> {
-        const params = {imageBase64: imageAddType === 'upload' ? imageBase64 : imageAddType === 'imageUrl' ? imageUrl : '', imageCategory: selectedCategory, imageName: imageAddType === 'upload' ? file?.name: `image${Math.random()}`, imageAddType: imageAddType}
+        const params = {imageBase64: imageAddType === 'upload' ? imageBase64 : imageAddType === 'imageUrl' ? imageUrl : '', imageCategory: selectedCategory, imageName: imageAddType === 'upload' ? file?.name: `image${Math.random()}`, imageAddType: imageAddType, thumbnail: imageThumbnail}
         axios.post(BASE_URl+'addWallpapersApi', params).then((response: any)=> {
             if(response){
                 getAllResultService()
